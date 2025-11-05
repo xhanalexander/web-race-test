@@ -4,6 +4,9 @@ Build/*.framework.js filter=lfs diff=lfs merge=lfs -text
 Build/*.data.gz filter=lfs diff=lfs merge=lfs -text
 Build/*.wasm.gz filter=lfs diff=lfs merge=lfs -text
 Build/*.framework.js.gz filter=lfs diff=lfs merge=lfs -text
+Build/*.data.br filter=lfs diff=lfs merge=lfs -text
+Build/*.wasm.br filter=lfs diff=lfs merge=lfs -text
+Build/*.framework.js.br filter=lfs diff=lfs merge=lfs -text
 
 *.wasm     Build/wasm
 *.data     Build/data
