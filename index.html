@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | IRC VR Motorbike IMOS</title>
+    <title>Unity WebGL Player | IRC Web Motorbike IMOS</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
@@ -20,7 +20,7 @@
       <div id="unity-footer">
         <div id="unity-webgl-logo"></div>
         <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">IRC VR Motorbike IMOS</div>
+        <div id="unity-build-title">IRC Web Motorbike IMOS</div>
       </div>
     </div>
     <script>
@@ -57,14 +57,14 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebBuildTest.loader.js";
+      var loaderUrl = buildUrl + "/Build.loader.js";
       var config = {
-        dataUrl: buildUrl + "/WebBuildTest.data",
-        frameworkUrl: buildUrl + "/WebBuildTest.framework.js",
-        codeUrl: buildUrl + "/WebBuildTest.wasm",
+        dataUrl: buildUrl + "/Build.data",
+        frameworkUrl: buildUrl + "/Build.framework.js",
+        codeUrl: buildUrl + "/Build.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Tenstud",
-        productName: "IRC VR Motorbike IMOS",
+        productName: "IRC Web Motorbike IMOS",
         productVersion: "1.1",
         showBanner: unityShowBanner,
       };
@@ -85,6 +85,100 @@
       // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
       // expected to change.
 
+      // Function to check and enforce device orientation
+      function checkOrientation() {
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (!isMobile) {
+          // Desktop: always show canvas normally, no warning
+          canvas.style.display = "block";
+          warningBanner.style.display = "none";
+          warningBanner.innerHTML = "";
+          canvas.style.width = "960px";
+          canvas.style.height = "600px";
+          return;
+        }
+
+        var isLandscapeLeft = false;
+        var isLandscapeRight = false;
+        var isPortrait = false;
+        var warningMessage = "";
+
+        if (typeof window.orientation === "number") {
+          var orientation = window.orientation;
+          isLandscapeLeft = orientation === 90;
+          isLandscapeRight = orientation === -90;
+          isPortrait = orientation === 0 || orientation === 180;
+        } else if (screen.orientation && typeof screen.orientation.angle === "number") {
+          var angle = screen.orientation.angle;
+          isLandscapeLeft = angle === 90;
+          isLandscapeRight = angle === 270 || angle === -90;
+          isPortrait = angle === 0 || angle === 180;
+        } else {
+          var isLandscape = window.innerWidth > window.innerHeight;
+          isLandscapeLeft = isLandscape;
+          isPortrait = !isLandscape;
+        }
+
+        if (!isLandscapeLeft) {
+          // Force hide canvas and show warning
+          canvas.style.width = "1px";
+          canvas.style.height = "1px";
+          canvas.style.display = "none";
+
+          var unityLogo = document.querySelector("#unity-logo");
+          var unityWebGLLogo = document.querySelector("#unity-webgl-logo");
+          var unityFooter = document.querySelector("#unity-footer");
+          if (unityLogo) unityLogo.style.display = "none";
+          if (unityWebGLLogo) unityWebGLLogo.style.display = "none";
+          if (unityFooter) unityFooter.style.display = "none";
+          if (loadingBar) loadingBar.style.display = "none";
+
+          if (isPortrait) {
+            warningMessage = "Please rotate your device to landscape mode to play the game.";
+          } else if (isLandscapeRight) {
+            warningMessage = "Please rotate your device to other side of landscape to start the game.";
+          } else {
+            warningMessage = "Please rotate your device to landscape left mode to play the game.";
+          }
+
+          warningBanner.innerHTML = '<div style="background: red; padding: 20px; text-align: center; color: white; font-size: 18px; font-weight: bold;">' + warningMessage + "</div>";
+          warningBanner.style.display = "flex";
+          warningBanner.style.alignItems = "center";
+          warningBanner.style.justifyContent = "center";
+          warningBanner.style.position = "fixed";
+          warningBanner.style.top = "0";
+          warningBanner.style.left = "0";
+          warningBanner.style.width = "100%";
+          warningBanner.style.height = "100%";
+          warningBanner.style.zIndex = "9999";
+        } else {
+          // Landscape left: restore canvas
+          canvas.style.display = "block";
+          warningBanner.style.display = "none";
+          warningBanner.innerHTML = "";
+          warningBanner.style.position = "";
+          warningBanner.style.top = "";
+          warningBanner.style.left = "";
+          warningBanner.style.width = "";
+          warningBanner.style.height = "";
+          warningBanner.style.zIndex = "";
+          warningBanner.style.alignItems = "";
+          warningBanner.style.justifyContent = "";
+
+          var unityLogoShow = document.querySelector("#unity-logo");
+          var unityWebGLLogoShow = document.querySelector("#unity-webgl-logo");
+          var unityFooterShow = document.querySelector("#unity-footer");
+          if (unityLogoShow) unityLogoShow.style.display = "";
+          if (unityWebGLLogoShow) unityWebGLLogoShow.style.display = "";
+          if (unityFooterShow) unityFooterShow.style.display = "";
+          if (loadingBar) loadingBar.style.display = "block";
+
+          canvas.style.width = "100%";
+          canvas.style.height = "100%";
+        }
+      }
+
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         // Mobile device style: fill the whole browser client area with the game canvas:
 
@@ -99,12 +193,18 @@
         // performance, uncomment the following line:
         // config.devicePixelRatio = 1;
 
+        checkOrientation();
+        window.addEventListener('orientationchange', function() {
+          setTimeout(checkOrientation, 100);
+        });
+        window.addEventListener('resize', checkOrientation);
 
       } else {
         // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
 
         canvas.style.width = "960px";
         canvas.style.height = "600px";
+        warningBanner.style.display = "none";
       }
 
       loadingBar.style.display = "block";
